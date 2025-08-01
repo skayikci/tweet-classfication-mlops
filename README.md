@@ -1,0 +1,33 @@
+## Model Selection Summary
+
+Multiple models were trained using TF-IDF + {LogisticRegression, RandomForest, NaiveBayes, SVM}.
+Each run was tracked using MLflow.
+
+Final selected model:
+- **Model**: SVM
+- **Vectorizer**: TF-IDF (ngram_range=(1,2), min_df=2)
+- **Training data**: Cleaned and balanced customer support tweets
+- **Accuracy**: XX.XX%
+- **F1 Macro**: XX.XX%
+- **Confidence**: Using `predict_proba` from SVC with probability=True
+
+Only the best model and vectorizer are saved in `models/`:
+- `svm_tfidf_model_20250801_XXXX.pkl`
+- `svm_tfidf_vectorizer_20250801_XXXX.pkl`
+- `svm_tfidf_label_encoder_20250801_XXXX.pkl`
+
+For full experiment history, check `mlruns/` or launch the MLflow UI:
+```bash
+mlflow ui
+```
+
+---
+
+### Optional Cleanup Script
+
+```bash
+# keep only the latest timestamped model artifacts
+ls -t models/svm_tfidf_model_*.pkl | tail -n +2 | xargs rm -f
+ls -t models/svm_tfidf_vectorizer_*.pkl | tail -n +2 | xargs rm -f
+ls -t models/svm_tfidf_label_encoder_*.pkl | tail -n +2 | xargs rm -f
+```
