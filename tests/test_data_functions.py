@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import pandas as pd
-from email_classification_certification import (
+from src.tweet_classification import (
     load_data, create_labels, clean_text, preprocess_data, perform_eda,
     run_baseline_model, get_model_configs
 )

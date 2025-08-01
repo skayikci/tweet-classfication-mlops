@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 from unittest.mock import patch
-from email_classification_certification import load_data, create_labels, clean_text
+from src.tweet_classification import load_data, create_labels, clean_text
 
 class TestDataIntegrityPreprocessing(unittest.TestCase):
 

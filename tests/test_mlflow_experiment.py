@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from email_classification_certification import MLflowExperiment
+from src.tweet_classification import MLflowExperiment
 
 class TestMLflowExperiment(unittest.TestCase):
     def setUp(self):

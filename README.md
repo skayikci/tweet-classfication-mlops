@@ -7,8 +7,8 @@ Final selected model:
 - **Model**: SVM
 - **Vectorizer**: TF-IDF (ngram_range=(1,2), min_df=2)
 - **Training data**: Cleaned and balanced customer support tweets
-- **Accuracy**: XX.XX%
-- **F1 Macro**: XX.XX%
+- **Accuracy**: 95.16%
+- **F1 Macro**: 94%
 - **Confidence**: Using `predict_proba` from SVC with probability=True
 
 Only the best model and vectorizer are saved in `models/`:
@@ -20,7 +20,11 @@ For full experiment history, check `mlruns/` or launch the MLflow UI:
 ```bash
 mlflow ui
 ```
+Here is the screenshot of the MLflow UI showing the best model:
+![MLflow UI Best Model](/assets/preview.webp)
 
+After that I selected the best model, I saved the artifacts in the MLflow UI:
+![MLFlow UI Save Artifacts](/assets/svm_selection.webp)
 ---
 
 ### Optional Cleanup Script
