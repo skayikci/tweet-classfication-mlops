@@ -1,37 +1,72 @@
-## Model Selection Summary
+## Model Selection & Orchestration Summary
 
 Multiple models were trained using TF-IDF + {LogisticRegression, RandomForest, NaiveBayes, SVM}.
-Each run was tracked using MLflow.
+All experiments were tracked and compared using MLflow.
 
-Final selected model:
-- **Model**: SVM
-- **Vectorizer**: TF-IDF (ngram_range=(1,2), min_df=2)
-- **Training data**: Cleaned and balanced customer support tweets
-- **Accuracy**: 95.16%
-- **F1 Macro**: 94%
-- **Confidence**: Using `predict_proba` from SVC with probability=True
+**Best result:**
 
-Only the best model and vectorizer are saved in `models/`:
-- `svm_tfidf_model_20250801_XXXX.pkl`
-- `svm_tfidf_vectorizer_20250801_XXXX.pkl`
-- `svm_tfidf_label_encoder_20250801_XXXX.pkl`
+<p align="center">
+  <img src="assets/svm_selection.png" alt="MLflow UI Best Model" width="600"/>
+</p>
 
-For full experiment history, check `mlruns/` or launch the MLflow UI:
+---
+
+## Category distribution
+<p align="center">
+  <img src="assets/category_distribution.png" alt="Category Distribution" width="600"/>
+</p>
+
+---
+## Confusion Matrix
+<p align="center">
+  <img src="assets/confusion_matrix.png" alt="Confusion Matrix" width="600"/>
+</p>    
+
+---
+
+## MLFlow Overview
+
+<p align="center">
+  <img src="assets/preview.webp" alt="MLflow Overview" width="600"/>
+</p>
+---
+
+## Workflow Orchestration with Prefect
+
+The entire ML pipeline is orchestrated using [Prefect](https://www.prefect.io/). The workflow automates:
+- Data loading and preprocessing
+- Exploratory Data Analysis (EDA)
+- Baseline model training
+- Model comparison and hyperparameter tuning
+- Model registration in MLflow
+
+### How to run the Prefect pipeline
+
+```bash
+# Run the full pipeline (from project root)
+make orchestrate
+# or directly
+python src/prefect_flow.py
+```
+
+Each step is modular and can be reused or extended. The pipeline is defined in `src/prefect_flow.py` and uses tasks that call functions from `src/tweet_classification.py`.
+
+### MLflow UI
+
+To view all experiment runs, metrics, and model registry:
+
 ```bash
 mlflow ui
+# Then open http://localhost:5000 in your browser
 ```
-Here is the screenshot of the MLflow UI showing the best model:
-![MLflow UI Best Model](/assets/preview.webp)
 
-After that I selected the best model, I saved the artifacts in the MLflow UI:
-![MLFlow UI Save Artifacts](/assets/svm_selection.webp)
 ---
 
 ### Optional Cleanup Script
 
 ```bash
 # keep only the latest timestamped model artifacts
-ls -t models/svm_tfidf_model_*.pkl | tail -n +2 | xargs rm -f
-ls -t models/svm_tfidf_vectorizer_*.pkl | tail -n +2 | xargs rm -f
-ls -t models/svm_tfidf_label_encoder_*.pkl | tail -n +2 | xargs rm -f
+ls -t models/*_model.pkl | tail -n +2 | xargs rm -f
+ls -t models/*_vectorizer.pkl | tail -n +2 | xargs rm -f
+ls -t models/*_label_encoder.pkl | tail -n +2 | xargs rm -f
 ```

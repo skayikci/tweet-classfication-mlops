@@ -34,10 +34,11 @@ def load_data():
     Returns a DataFrame with required columns.
     """
     try:
-        df = pd.read_csv('twcs.csv')
+        data_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'twcs.csv')
+        df = pd.read_csv(data_path)
         print(f"Loaded {len(df)} records from customer support dataset")
-    except:
-        print("Primary dataset not found, using airline sentiment data")
+    except Exception as e:
+        print(f"Primary dataset not found at {data_path}, using airline sentiment data. Error: {e}")
         df = pd.read_csv('airline_sentiment.csv')
         df = df.rename(columns={'airline_sentiment': 'category', 'text': 'text'})
     return df
@@ -179,7 +180,7 @@ def setup_mlflow():
     mlflow.set_tracking_uri("file:./mlruns")
     
     # Create or set experiment
-    experiment_name = "email_classification_experiments"
+    experiment_name = "tweet_classification_experiments"
     try:
         experiment_id = mlflow.create_experiment(experiment_name)
     except:
@@ -197,7 +198,7 @@ class MLflowExperiment:
     MLflow experiment tracking wrapper for tweet model training and logging.
     """
     
-    def __init__(self, experiment_name="email_classification"):
+    def __init__(self, experiment_name="tweet_classification"):
         self.experiment_name = experiment_name
         setup_mlflow()
     
@@ -275,7 +276,7 @@ class MLflowExperiment:
             mlflow.sklearn.log_model(
                 sk_model=model,
                 artifact_path="model",
-                registered_model_name=f"email_classifier_{model_name}"
+                registered_model_name=f"tweet_classifier_{model_name}"
             )
             
             mlflow.log_artifact(vectorizer_path)
@@ -490,7 +491,7 @@ def run_model_comparison():
         mlflow.sklearn.log_model(
             sk_model=tuned_model,
             artifact_path="final_model",
-            registered_model_name="email_classifier_production"
+            registered_model_name="tweet_classifier_production"
         )
     
     return results, tuned_model, tuned_vectorizer, le
@@ -510,7 +511,7 @@ def register_best_model():
         registered_models = client.search_registered_models()
         
         if registered_models:
-            model_name = "email_classifier_production"
+            model_name = "tweet_classifier_production"
             
             # Get latest version
             latest_versions = client.get_latest_versions(model_name, stages=["None"])
@@ -532,37 +533,23 @@ def register_best_model():
 # MAIN EXECUTION
 # =============================================
 
-def main():
-    """
-    Main execution for Tweet Classification MLOps Project.
-    """
-    print("TWEET CLASSIFICATION MLOPS PROJECT (tweet_classification.py)")
-    print("=" * 50)
-    # Step 1: Load and preprocess data
+
+# Modular pipeline functions for orchestration
+def pipeline_load_and_preprocess():
     df = load_data()
     df = preprocess_data(df)
-    # Step 2: EDA
+    return df
+
+def pipeline_eda(df):
     perform_eda(df)
-    # Step 3: Baseline model
+
+def pipeline_baseline(df):
     model, vectorizer, le, accuracy = run_baseline_model(df)
-    print(f"\nBaseline model accuracy: {accuracy:.3f}")
-    print("\n" + "="*50)
-    print("Baseline model complete. Proceeding to MLOps pipeline...")
-    print("="*50)
-    # Step 4: MLOps pipeline (MLflow tracking, model comparison, registry)
+    return model, vectorizer, le, accuracy
+
+def pipeline_model_comparison():
     results, final_model, final_vectorizer, le = run_model_comparison()
-    register_best_model()
-    print("\n" + "="*50)
-    print("PROJECT COMPLETE!")
-    print("✅ Baseline model and EDA done")
-    print("✅ Multiple models tested with MLflow tracking")
-    print("✅ Hyperparameter tuning completed")
-    print("✅ Best model registered in Model Registry")
-    print("✅ Ready for API deployment")
-    print("\n🚀 Run 'mlflow ui' to see your experiments!")
-    print("="*50)
     return results, final_model, final_vectorizer, le
 
-if __name__ == "__main__":
-    # Install MLflow first: pip install mlflow
-    results, model, vectorizer, le = main()
+def pipeline_register_best():
+    register_best_model()
