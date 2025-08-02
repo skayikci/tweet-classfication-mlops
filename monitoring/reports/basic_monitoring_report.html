@@ -1,0 +1,117 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>ML Monitoring Report</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background-color: #f8f9fa; }
+            .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .metric { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #007bff; }
+            .alert { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; }
+            .good { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; }
+            .warning { background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545; }
+            h1 { color: #333; border-bottom: 3px solid #007bff; padding-bottom: 10px; }
+            h2 { color: #666; margin-top: 30px; }
+            .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .stat-box { background: #ffffff; border: 1px solid #e9ecef; padding: 15px; border-radius: 8px; }
+            .number { font-size: 24px; font-weight: bold; color: #007bff; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🔍 ML Model Monitoring Report</h1>
+            <p><strong>Generated:</strong> 2025-08-02 16:48:26</p>
+            
+            <h2>📊 Data Summary</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="number">2,811,774</div>
+                    <div>Reference Samples</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">2</div>
+                    <div>Current Samples</div>
+                </div>
+            </div>
+            
+            <h2>📝 Text Length Analysis</h2>
+            <div class="metric">
+                <div class="stats-grid">
+                    <div>
+                        <strong>📚 Reference Text:</strong><br>
+                        • Average: 113.9 characters<br>
+                        • Median: 115.0 characters<br>
+                        • Std Dev: 52.3 characters<br>
+                        • Min: 1 characters<br>
+                        • Max: 513 characters
+                    </div>
+                    <div>
+                        <strong>🔄 Current Text:</strong><br>
+                        • Average: 14.0 characters<br>
+                        • Median: 14.0 characters<br>
+                        • Std Dev: 0.0 characters<br>
+                        • Min: 14 characters<br>
+                        • Max: 14 characters
+                    </div>
+                </div>
+            </div>
+            
+            <h2>💬 Word Count Analysis</h2>
+            <div class="metric">
+                <div class="stats-grid">
+                    <div>
+                        <strong>📚 Reference Words:</strong><br>
+                        • Average: 19.5 words<br>
+                        • Median: 19.0 words<br>
+                        • Std Dev: 9.6 words
+                    </div>
+                    <div>
+                        <strong>🔄 Current Words:</strong><br>
+                        • Average: 3.0 words<br>
+                        • Median: 3.0 words<br>
+                        • Std Dev: 0.0 words
+                    </div>
+                </div>
+            </div>
+            
+            <h2>🎯 Vocabulary Analysis</h2>
+            <div class="metric">
+                <strong>📖 Vocabulary Statistics:</strong><br>
+                • Reference unique words: 1,940,288<br>
+                • Current unique words: 4<br>
+                • Overlapping words: 4<br>
+                • New words in current: 0<br>
+                • Vocabulary overlap: 0.0%
+            </div>
+            
+            <h2>⚠️ Drift Detection</h2>
+            <div class="warning">
+                <strong>📏 Text Length Drift:</strong><br>
+                • Difference: 99.9 characters<br>
+                • Threshold: 52.3 characters<br>
+                • Status: 🚨 DRIFT DETECTED!
+            </div>
+            
+            <div class="warning">
+                <strong>💬 Word Count Drift:</strong><br>
+                • Difference: 16.5 words<br>
+                • Threshold: 9.6 words<br>
+                • Status: 🚨 DRIFT DETECTED!
+            </div>
+            
+            <div class="good">
+                <strong>📖 Vocabulary Drift:</strong><br>
+                • New words: 0<br>
+                • Threshold: 194,028 words (10% of reference)<br>
+                • Status: ✅ Normal vocabulary variation
+            </div>
+            
+            <h2>📈 Recommendations</h2>
+            <div class="metric">
+                <strong>🔧 Action Required:</strong><br>
+                • Consider retraining the model due to detected drift<br>• Review recent data sources for changes<br>• Monitor prediction performance closely
+            </div>
+        </div>
+    </body>
+    </html>
+    

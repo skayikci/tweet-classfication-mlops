@@ -5,9 +5,9 @@ import pandas as pd
 import os
 
 # ---- Config ----
-MODEL_PATH = os.getenv("MODEL_PATH", "models/svm_tfidf_model_20250801_1205.pkl")
-VECTORIZER_PATH = os.getenv("VECTORIZER_PATH", "models/svm_tfidf_vectorizer_20250801_1205.pkl")
-ENCODER_PATH = os.getenv("ENCODER_PATH", "models/svm_tfidf_label_encoder_20250801_1205.pkl")
+MODEL_PATH = os.getenv("MODEL_PATH", "models/svm_tfidf_model_20250802_2048.pkl")
+VECTORIZER_PATH = os.getenv("VECTORIZER_PATH", "models/svm_tfidf_vectorizer_20250802_2048.pkl")
+ENCODER_PATH = os.getenv("ENCODER_PATH", "models/svm_tfidf_label_encoder_20250802_2048.pkl")
 
 # ---- Load model and vectorizer ----
 print(f"🔄 Loading model from: {MODEL_PATH}")
