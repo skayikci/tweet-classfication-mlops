@@ -3,13 +3,15 @@ CREATE TABLE prediction_logs (
   input_text TEXT NOT NULL,
   predicted_label TEXT NOT NULL,
   user_label TEXT,
-  timestamp TIMESTAMP DEFAULT NOW()
+  confidence FLOAT,
+  timestamp TIMESTAMP DEFAULT NOW(),
+  CONSTRAINT unique_input_text_predicted_label UNIQUE (input_text, predicted_label)
 );
+
 
 CREATE INDEX idx_prediction_logs_timestamp ON prediction_logs (timestamp);
 CREATE INDEX idx_prediction_logs_label ON prediction_logs (predicted_label);
 CREATE INDEX idx_prediction_logs_user_label ON prediction_logs (user_label);
-CREATE INDEX idx_prediction_logs_input_text ON prediction_logs (input_text);
 CREATE OR REPLACE FUNCTION log_prediction(
     p_input_text TEXT,
     p_predicted_label TEXT,

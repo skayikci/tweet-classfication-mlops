@@ -29,28 +29,28 @@ services:
       - db
     command: uvicorn src.api:app --host 0.0.0.0 --port 8000 --reload
 
-  # Prefect service
-  prefect:
-    image: prefecthq/prefect:2-latest
-    restart: always
-    environment:
-      PREFECT_API_URL: http://prefect-server:4200/api
-    ports:
-      - "4200:4200"
-    depends_on:
-      - db
-    command: prefect server start
+  # # Prefect service
+  # prefect:
+  #   image: prefecthq/prefect:2-latest
+  #   restart: always
+  #   environment:
+  #     PREFECT_API_URL: http://prefect-server:4200/api
+  #   ports:
+  #     - "4200:4200"
+  #   depends_on:
+  #     - db
+  #   command: prefect server start
 
-  # MLFlow
-  mlflow:
-    image: mlflow/mlflow:latest
-    restart: always
-    environment:
-      MLFLOW_TRACKING_URI: http://mlflow-server:5000
-    ports:
-      - "5000:5555"
-    volumes:
-      - ./mlruns:/mlflow/mlruns
-    command: mlflow server
+  # # MLFlow
+  # mlflow:
+  #   image: mlflow/mlflow:latest
+  #   restart: always
+  #   environment:
+  #     MLFLOW_TRACKING_URI: http://mlflow-server:5000
+  #   ports:
+  #     - "5000:5555"
+  #   volumes:
+  #     - ./mlruns:/mlflow/mlruns
+  #   command: mlflow server
 volumes:
   db_data:

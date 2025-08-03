@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tweet Feedback Interface</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    textarea {
+      width: 60%;
+      height: 4rem;
+    }
+    select {
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📝 Tweet Classification + Feedback</h1>
+
+  <section>
+    <h3>🔍 Classify a New Tweet</h3>
+    <textarea id="tweetInput" placeholder="Type a tweet here..."></textarea><br>
+    <button id="predictBtn">🚀 Predict</button>
+    <div id="predictionResult" style="margin-top: 1rem;"></div>
+  </section>
+
+  <hr>
+
+  <h3>📋 Review Predictions</h3>
+  <table id="predictions" class="display">
+    <thead>
+      <tr>
+        <th>Tweet</th>
+        <th>Prediction</th>
+        <th>Confidence</th>
+        <th>User Label</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <br />
+  <button id="submit" disabled>✅ Submit Feedback</button>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script>
+    const possibleLabels = ['billing', 'technical', 'orders', 'complaints', 'general'];
+    let modifiedRows = [];
+
+    const table = $('#predictions').DataTable({
+      ajax: '/recent_predictions',
+      columns: [
+        { data: 'input_text' },
+        { data: 'predicted_label' },
+        { data: 'confidence', render: d => d !== null ? (d * 100).toFixed(1) + '%' : 'N/A' },
+        {
+          data: 'user_label',
+          render: function(data, type, row, meta) {
+            const current = data || '';
+            const disabled = current ? 'disabled' : '';
+            const select = `<select data-row="${meta.row}" ${disabled}>
+              <option value="">--Choose--</option>
+              ${possibleLabels.map(l => `<option value="${l}" ${l === current ? 'selected' : ''}>${l}</option>`).join('')}
+            </select>`;
+            return select;
+          }
+        }
+      ],
+      pageLength: 10
+    });
+
+    $('#predictions tbody').on('change', 'select', function () {
+      const rowIdx = $(this).data('row');
+      const rowData = table.row(rowIdx).data();
+      const userLabel = $(this).val();
+
+      const entry = {
+        input_text: rowData.input_text,
+        predicted_label: rowData.predicted_label,
+        user_label: userLabel,
+        confidence: rowData.confidence || null
+      };
+
+      const existingIndex = modifiedRows.findIndex(r => r.input_text === entry.input_text);
+      if (existingIndex >= 0) {
+        modifiedRows[existingIndex] = entry;
+      } else {
+        modifiedRows.push(entry);
+      }
+
+      $('#submit').prop('disabled', modifiedRows.length === 0);
+    });
+
+    $('#submit').on('click', function () {
+      $.ajax({
+        url: '/feedback',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(modifiedRows),
+        success: function () {
+          alert('✅ Feedback submitted!');
+          modifiedRows = [];
+          $('#submit').prop('disabled', true);
+          table.ajax.reload();
+        },
+        error: function () {
+          alert('❌ Failed to submit feedback');
+        }
+      });
+    });
+
+    $('#predictBtn').on('click', function () {
+      const tweet = $('#tweetInput').val();
+      if (!tweet.trim()) {
+        alert('Please enter a tweet!');
+        return;
+      }
+
+      $.ajax({
+        url: '/predict',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ text: tweet }),
+        success: function (res) {
+          $('#predictionResult').html(
+            `<strong>Prediction:</strong> ${res.predicted_category} &nbsp; 
+             <strong>Confidence:</strong> ${(res.confidence * 100).toFixed(1)}%`
+          );
+
+          // Add prediction to feedback table
+          table.row.add({
+            input_text: res.text,
+            predicted_label: res.predicted_category,
+            confidence: res.confidence,
+            user_label: ''
+          }).draw(false);
+        },
+        error: function () {
+          alert('Prediction failed!');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
