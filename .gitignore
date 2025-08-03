@@ -110,6 +110,9 @@ poetry.lock
 *.sqlite
 *.log
 
+# report files
+monitoring/reports/*.html
+
 # MLflow artifacts and models
 mlruns/
 models/

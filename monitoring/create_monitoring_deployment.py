@@ -1,4 +1,4 @@
-# monitoring/serve_monitoring.py
+# monitoring/create_monitoring_deployment.py
 from prefect import serve
 from monitoring.monitor_flow import monitoring_flow
 
@@ -9,7 +9,7 @@ if __name__ == "__main__":
     
     serve(
         monitoring_flow.to_deployment(
-            name="monitoring-flow/monitoring-job",  # Format: FLOW_NAME/DEPLOYMENT_NAME
+            name="monitoring-flow/monitoring-job",
             schedule={
                 "cron": "0 8 * * *",
                 "timezone": "Europe/Berlin"
