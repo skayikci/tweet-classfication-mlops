@@ -30,3 +30,6 @@ pytest==8.2.1
 # Development tools
 black==24.4.2
 flake8==7.0.0
+
+# Database interaction
+psycopg2-binary==2.9.9

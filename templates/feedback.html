@@ -38,6 +38,7 @@
         <th>Prediction</th>
         <th>Confidence</th>
         <th>User Label</th>
+        <th style="display:none">Timestamp</th> <!-- Hidden but sortable -->
       </tr>
     </thead>
     <tbody></tbody>
@@ -68,8 +69,14 @@
             </select>`;
             return select;
           }
+        },
+        {
+          data: 'timestamp',
+          visible: false,
+          searchable: false
         }
       ],
+      order: [[4, 'desc']],
       pageLength: 10
     });
 
@@ -136,7 +143,8 @@
             input_text: res.text,
             predicted_label: res.predicted_category,
             confidence: res.confidence,
-            user_label: ''
+            user_label: '',
+            timestamp: new Date().toISOString()
           }).draw(false);
         },
         error: function () {

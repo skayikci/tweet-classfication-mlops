@@ -1,0 +1,26 @@
+input_text,predicted_label,user_label,confidence,timestamp
+"My billing statement shows a charge I never authorized. Can someone help me understand this?",billing,billing,0.92,2024-08-01 14:23:15
+"The app keeps crashing every time I try to log in. This technical issue is really frustrating!",technical,technical,0.88,2024-08-01 15:45:32
+"Where is my order? It was supposed to arrive yesterday but no delivery yet.",orders,orders,0.85,2024-08-01 09:12:44
+"I want to cancel my subscription immediately. This service is terrible and I demand a refund.",complaints,billing,0.76,2024-08-01 18:30:21
+"Thank you for the excellent customer service today. Really appreciate the help!",general,general,0.71,2024-08-01 12:15:08
+"There's a bug in your payment system - it charged me twice for the same item!",technical,billing,0.82,2024-08-01 16:42:13
+"My invoice from last month still hasn't been corrected despite multiple calls.",billing,billing,0.94,2024-08-02 10:33:27
+"The product I received is completely broken and not working as advertised.",technical,complaints,0.79,2024-08-02 13:21:45
+"Need help with shipping address change for my pending order.",orders,orders,0.91,2024-08-02 11:07:52
+"Your website has a technical error that prevents me from completing checkout.",technical,technical,0.89,2024-08-02 14:55:19
+"Can I get a refund for my recent purchase? The money was deducted but no confirmation received.",billing,billing,0.87,2024-08-02 17:28:41
+"The delivery driver left my package in the wrong location. Very disappointed with this service.",orders,complaints,0.74,2024-08-02 19:15:33
+"How do I update my payment information? The current method isn't working.",billing,technical,0.68,2024-08-03 08:44:16
+"I need to return this item as it doesn't match the description on your website.",complaints,complaints,0.93,2024-08-03 12:58:07
+"Great product quality! Will definitely order again soon.",general,general,0.83,2024-08-03 15:22:34
+"Your app has a major bug - it keeps logging me out every few minutes. Please fix this technical issue!",technical,technical,0.95,2024-08-03 16:47:22
+"Still waiting for my refund from 3 weeks ago. Where is my money?",billing,billing,0.91,2024-08-03 20:13:45
+"The item I ordered arrived damaged during shipping. Need immediate replacement.",orders,complaints,0.78,2024-08-04 09:35:18
+"Love the new features you added! The user experience is much better now.",general,general,0.69,2024-08-04 11:41:29
+"There's an error message appearing when I try to make a payment. Technical support needed.",technical,billing,0.73,2024-08-04 13:26:51
+"My order status shows delivered but I never received the product. What's going on?",orders,orders,0.86,2024-08-04 15:52:14
+"I want to exchange this item for a different size. What's your return policy?",complaints,complaints,0.84,2024-08-04 18:17:36
+"The charge on my credit card doesn't match what I was quoted. Please review my billing.",billing,billing,0.90,2024-08-04 20:43:28
+"Your website is not working properly - pages won't load and I keep getting technical errors.",technical,technical,0.92,2024-08-05 07:29:45
+"Fast delivery and excellent packaging! Very satisfied with my recent order.",orders,general,0.75,2024-08-05 14:38:17

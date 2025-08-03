@@ -99,6 +99,8 @@ poetry.lock
 
 # Data files
 *.csv
+# except sample data under database folder:
+!database/prediction_logs_sample.csv
 *.tsv
 *.parquet
 *.pkl

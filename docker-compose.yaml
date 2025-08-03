@@ -1,7 +1,6 @@
 version: '3.9'
 
 services:
-  # Database service
   db:
     image: postgres:15
     restart: always
@@ -12,45 +11,54 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./database/prediction_logs.sql:/docker-entrypoint-initdb.d/001_schema.sql
-      - ./database/load_sample_data.sh:/docker-entrypoint-initdb.d/002_load_sample_data.sh
+      - ./database/init-multi-db.sql:/docker-entrypoint-initdb.d/001_init_multi_db.sql
+      - ./database/prediction_logs.sql:/docker-entrypoint-initdb.d/002_schema.sql
+      - ./database/prediction_logs_sample.csv:/docker-entrypoint-initdb.d/003_sample_prediction_logs.csv
+      - ./database/load_sample_data.sh:/docker-entrypoint-initdb.d/004_load_sample_data.sh
 
-  # Application service
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
     environment:
       DATABASE_URL: postgresql://tweets:tweets@db:5432/tweet_monitoring
+      MLFLOW_TRACKING_URI: http://mlflow:5555
     ports:
       - "8000:8000"
     depends_on:
       - db
     command: uvicorn src.api:app --host 0.0.0.0 --port 8000 --reload
 
-  # # Prefect service
-  # prefect:
-  #   image: prefecthq/prefect:2-latest
-  #   restart: always
-  #   environment:
-  #     PREFECT_API_URL: http://prefect-server:4200/api
-  #   ports:
-  #     - "4200:4200"
-  #   depends_on:
-  #     - db
-  #   command: prefect server start
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.12.1
+    restart: always
+    ports:
+      - "5555:5000"
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5555
+    command: >
+      mlflow server 
+        --backend-store-uri sqlite:///mlflow/mlflow.db 
+        --default-artifact-root /mlflow/mlruns 
+        --host 0.0.0.0
+    volumes:
+      - ./mlflow:/mlflow
 
-  # # MLFlow
-  # mlflow:
-  #   image: mlflow/mlflow:latest
-  #   restart: always
-  #   environment:
-  #     MLFLOW_TRACKING_URI: http://mlflow-server:5000
-  #   ports:
-  #     - "5000:5555"
-  #   volumes:
-  #     - ./mlruns:/mlflow/mlruns
-  #   command: mlflow server
+  prefect:
+    image: prefecthq/prefect:2.14.20-python3.11
+    restart: always
+    environment:
+      PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://tweets:tweets@db:5432/prefect
+      PREFECT_ORION_API_HOST: 0.0.0.0
+    ports:
+      - "4200:4200"
+    depends_on:
+      - db
+    command: >
+      sh -c "
+        prefect config set PREFECT_API_DATABASE_CONNECTION_URL=postgresql+asyncpg://tweets:tweets@db:5432/prefect &&
+        prefect server start --host 0.0.0.0
+      "
 volumes:
   db_data:

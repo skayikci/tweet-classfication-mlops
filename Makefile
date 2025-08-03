@@ -9,7 +9,7 @@ help:
 	@echo "  run          Run the FastAPI server in Docker."
 	@echo "  lint         Lint Python code with flake8."
 	@echo "  test         Run all unit tests."
-	@echo "  retrain	  Retrain the model with svn tfidf."
+	@echo "  retrain	  Retrain the model with svm tfidf."
 	@echo "  clean-models Remove all MLflow models."
 	@echo "  orchestrate  Run the Prefect workflow pipeline."
 	@echo "  clean        Remove Python cache and Docker images."
@@ -20,10 +20,10 @@ clean-models:
 	find . -name "*.pkl" ! -name "*20250801*" -delete
 
 build:
-	docker build -t tweet-classification-api .
+	docker-compose build --pull --no-cache
 
 run:
-	docker compose up -d
+	docker-compose up -d
 
 lint:
 	flake8 src/ *.py

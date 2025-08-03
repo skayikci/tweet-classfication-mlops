@@ -272,3 +272,4 @@ ls -t models/*_label_encoder.pkl | tail -n +2 | xargs rm -f
 - Add monitoring with grafana or prometheus
 - Add terraform scripts for infrastructure setup
 - Fix local docker compose issues
+- Add github actions for CI/CD

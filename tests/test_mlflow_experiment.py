@@ -6,14 +6,14 @@ class TestMLflowExperiment(unittest.TestCase):
     def setUp(self):
         self.experiment = MLflowExperiment(experiment_name="test_experiment")
 
-    @patch("email_classification_certification.setup_mlflow")
+    @patch("tweet_classification_certification.setup_mlflow")
     def test_init_sets_experiment_name(self, mock_setup_mlflow):
         exp = MLflowExperiment(experiment_name="custom_name")
         self.assertEqual(exp.experiment_name, "custom_name")
         mock_setup_mlflow.assert_called_once()
 
-    @patch("email_classification_certification.joblib.dump")
-    @patch("email_classification_certification.mlflow")
+    @patch("tweet_classification_certification.joblib.dump")
+    @patch("tweet_classification_certification.mlflow")
     def test_run_experiment_logs_and_returns_metrics(self, mock_mlflow, mock_joblib_dump):
         # Mock model and vectorizer
         mock_model = MagicMock()

@@ -3,7 +3,7 @@
 # control along with your flow code.
 
 # Generic metadata about this project
-name: email_classification_mlops
+name: tweet_classification_mlops
 prefect-version: 3.4.7
 
 # build section allows you to manage and build docker images

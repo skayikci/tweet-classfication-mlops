@@ -40,8 +40,8 @@ print("✅ Model, vectorizer, and label encoder loaded.")
 
 # ---- FastAPI app ----
 app = FastAPI(
-    title="Email Category Classifier",
-    description="Classify customer emails into predefined categories using SVM + TF-IDF.",
+    title="Tweet Category Classifier",
+    description="Classify customer tweets into predefined categories using SVM + TF-IDF.",
     version="1.0.0"
 )
 
@@ -50,7 +50,7 @@ class TweetInput(BaseModel):
 
 @app.get("/health", tags=["Health"])
 def health_check():
-    return {"message": "📬 Email Classification API is live."}
+    return {"message": "📬 Tweet Classification API is live."}
 
 @app.get("/", response_class=HTMLResponse, tags=["Home"])
 def home(request: Request):
@@ -99,7 +99,7 @@ def predict(input: TweetInput):
 def recent_predictions():
     try:
         conn = psycopg2.connect(DB_URL)
-        df = pd.read_sql_query("SELECT * FROM prediction_logs ORDER BY timestamp DESC LIMIT 100", conn)
+        df = pd.read_sql_query("SELECT * FROM prediction_logs ORDER BY prediction_logs.timestamp DESC LIMIT 100", conn)
         conn.close()
 
         def safe_round(x):
