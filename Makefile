@@ -24,7 +24,7 @@ build:
 	docker-compose build --pull --no-cache
 
 run:
-	docker-compose up -d
+	docker-compose up -d --build
 
 lint:
 	flake8 src/ *.py

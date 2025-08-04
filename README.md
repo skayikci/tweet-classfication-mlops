@@ -1,275 +1,199 @@
+# 🐦 Tweet Classification MLOps Pipeline
+
+A production-grade MLOps pipeline for tweet sentiment classification — built with FastAPI, MLflow, Prefect, Evidently, and PostgreSQL.
+
+This project showcases the full ML lifecycle: from model training and experiment tracking to API deployment and automated monitoring.
 
 ---
 
-# 🧠 Tweet Classification Pipeline
+## 🚀 Features
 
-A complete MLOps-ready pipeline for classifying tweets using traditional ML models (TF-IDF + SVM, Random Forest, etc.). The pipeline supports training, evaluation, orchestration, monitoring, and model versioning using **MLflow** and **Prefect**.
-
----
-
-## 💡 Use Case
-
-The goal of this project is to **automatically classify tweets** into predefined categories based on their content. This use case is highly relevant for:
-
-* Social media monitoring
-* Customer sentiment classification
-* Hate speech or spam detection
-* Real-time content moderation
-
-### 🎯 Why This Use Case?
-
-* Tweets are short, noisy, and rich in semantics—ideal for testing robust NLP pipelines.
-* Easy to demonstrate the value of model performance, monitoring, and orchestration.
-* Real-world applicability and a strong foundation for extending to deep learning or zero-shot models.
-
-### 📁 Dataset Source
-
-The dataset used for this project is the **Customer Support** dataset, which includes labeled tweets for various NLP tasks like sentiment analysis, emotion classification, and more.
-
-* 📦 Dataset link: [Customer Support on Kaggle](https://www.kaggle.com/datasets/thoughtvector/customer-support-on-twitter?resource=download)
-* Preprocessed and filtered for multi-class classification tasks.
+- **Tweet Classification**: Predict tweet sentiment (positive/negative) using a scikit-learn pipeline.
+- **MLflow Integration**: Track experiments, register models, and serve them via FastAPI.
+- **Model Registry & Loading**: Dynamically load latest model version via MLflow.
+- **Monitoring Pipeline**: Generate and visualize Evidently reports (data drift, classification quality).
+- **Automated Testing**: Lightweight integration tests with pytest.
+- **Modular Design**: Clear separation of `src/` code and `tests/`, supporting scalability.
 
 ---
 
-## 🚀 Model Selection & Experiment Tracking
+## 🛠️ Stack
 
-Multiple models were trained using a TF-IDF vectorizer combined with:
+| Layer            | Tool(s)                                   |
+|------------------|-------------------------------------------|
+| 🧠 Model         | Scikit-learn, TF-IDF, LabelEncoder        |
+| 📊 Monitoring    | Evidently                                 |
+| ⚙️ Orchestration | Prefect 2                                 |
+| 📦 Tracking      | MLflow                                    |
+| 🌐 API           | FastAPI + Uvicorn                         |
+| 🛢️ Storage       | PostgreSQL (via Docker Compose)           |
+| 🧪 Testing       | Pytest + Faker                            |
 
-* Logistic Regression
-* Random Forest
-* Naive Bayes
-* Support Vector Machine (SVM)
+---
 
-All experiments were tracked and compared using **MLflow**.
+## 🐳 Quickstart (via Docker Compose)
 
-### ✅ Best Result:
+1. Clone the repo:
+    ```bash
+    git clone https://github.com/skayikci/tweet-classfication-mlops.git
+    cd tweet-classfication-mlops
+    ```
 
+2. Start everything:
+
+    1. Make sure Docker is running.
+    2. Using make command:
+    ```bash
+    make run
+    ```
+    Or directly with Docker Compose:
+    ```bash
+    docker-compose up --build
+    ```
+
+3. Access services:
+    - API: `http://localhost:8000/docs`
+    - MLflow UI: `http://localhost:5555`
+    - Prefect Orion: `http://localhost:4200`
+    - PostgreSQL: `localhost:5432` (see `.env` for credentials)
+
+---
+
+## ⚙️ Project Structure
+
+```bash
+.
+├── monitoring/                    # Evidently monitoring flow
+├── src/
+│   ├── tweet_classification.py    # Training & inference logic
+│   ├── api.py                     # FastAPI app with prediction endpoints
+├── tests/                         # Pytest-based integration & unit tests
+├── data/                          # Sample datasets and reports
+├── docker-compose.yml
+└── requirements.txt
+```
+
+---
+## 👁️ Setup instructions (Local dev)
+```bash
+# Create a virtual environment
+python3 -m venv venv
+source venv/bin/activate
+# Install dependencies
+pip install -r requirements.txt
+```
+
+---
+
+## 🚆 Model Training & Inference
+1. Make sure Docker is running.
+2. Using make command:
+   ```bash
+   make orchestrate
+   ```
+   Or directly with Python:
+   ```bash
+   python src/tweet_classification.py
+   ```
+This will train the model and save it to MLflow as seen in the MLflow UI.
 <p align="center">
-  <img src="assets/svm_selection.png" alt="MLflow UI Best Model" width="600"/>
+  <img src="assets/preview.webp" alt="Model Training Preview" width="600"/>
 </p>
 
----
-
-## 📊 Category Distribution
-
-<p align="center">
-  <img src="assets/category_distribution.png" alt="Category Distribution" width="600"/>
-</p>
-
----
-
-## 📉 Confusion Matrix
+## 🏆 Selecting the best model
+1. Make sure Docker is running.
+2. The orchestration flow will automatically select the best model based on the evaluation metrics. And tag it as `production` with an alias.
 
 <p align="center">
-  <img src="assets/confusion_matrix.png" alt="Confusion Matrix" width="600"/>
+  <img src="assets/svm_selection.png" alt="SVM Model Selection" width="600"/>
 </p>
+
+3. Then this model will be served via FastAPI, ready for predictions as seen in code:
+```python
+try:
+    logger.info(f"📡 Connecting to MLflow at {MLFLOW_TRACKING_URI}")
+    model_uri = f"models:/{MODEL_NAME}@production"
+    logger.info(f"📦 Loading model from MLflow URI: {model_uri}")
+    model = mlflow.pyfunc.load_model(model_uri)
+    logger.info("✅ Model loaded from MLflow.")
+except Exception as e:
+    logger.exception(f"❌ Failed to load model from MLflow. {e}")
+    raise
+```
+
+## 🧪 Run Tests
+
+1. Make sure Docker is running.
+2. Using make command:
+  1. Using make command:
+  ```bash
+  make test
+  ```
+  2. Or directly with pytest:
+  ```bash
+  PYTHONPATH=. pytest tests -v
+  ```
 
 ---
 
-## 📁 MLflow UI Overview
+## 📊 Generate Monitoring Reports
 
+1. Make sure Docker is running.
+2. Generate reports
+  1. Using make command:
+  ```bash
+  make monitoring
+  ```
+  2. Or directly with Prefect:
+  ```bash
+  python monitoring/monitoring_flow.py
+  ```
+
+This saves an interactive HTML report to `data/monitoring/`.
+
+---
+
+## 📥 Sample Prediction
+
+1. Go to the web page for prediction and user input:
+```bash
+http://localhost:8000/
+```
+You can enter a tweet text and get the sentiment prediction.
 <p align="center">
-  <img src="assets/preview.webp" alt="MLflow Overview" width="600"/>
+  <img src="assets/user_label_feedbacks.png" alt="User Label Feedbacks" width="600"/>
 </p>
 
-To launch the MLflow UI locally:
+This website also has latest drift report of the model, which is generated by Evidently.
+
+2. Alternatively, use the API directly:
 
 ```bash
-mlflow ui
-# Open http://localhost:5000 in your browser
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text": "This product is amazing!"}'
 ```
 
----
+Or simply use the Swagger UI at `http://localhost:8000/docs`.
 
-## 🔁 Workflow Orchestration with Prefect
-
-The pipeline is orchestrated using [Prefect](https://www.prefect.io/), automating:
-
-* Data loading and preprocessing
-* Exploratory Data Analysis (EDA)
-* Baseline model training
-* Model selection and tuning
-* Model registration in MLflow
-
-### ▶️ Run the Prefect pipeline:
-
-```bash
-# From project root:
-make orchestrate
-
-# Or directly:
-python src/prefect_flow.py
-```
-
-The flow is defined in `src/prefect_flow.py` and uses modular tasks from `src/tweet_classification.py`.
 
 ---
 
-## 📈 Monitoring & Drift Detection
+## 📌 Use Cases
 
-This project includes production-ready monitoring using **Evidently** and **Prefect**.
-
-### 🔍 Monitoring Capabilities:
-
-* **Prediction Logging**
-  All API predictions are logged to `monitoring/recent_predictions.csv`.
-
-* **Drift & Performance Reports**
-  The `monitoring/monitor.py` script compares recent predictions against training data to detect:
-
-  * **Data drift**
-  * **Classification performance degradation**
-
-* **Scheduled Monitoring with Prefect**
-  Use `monitoring/monitor_flow.py` as a scheduled Prefect flow for automated monitoring.
-
-Monitoring artifacts are saved in `monitoring/reports/`.
+- Demonstrating **end-to-end MLOps workflows**
+- Teaching **monitoring and reproducibility**
+- Testing ML APIs in **Dockerized setups**
+- Preparing for **production-grade ML deployment**
 
 ---
 
-## 🔎 Prediction Feedback System (PostgreSQL + FastAPI)
-
-Users can interactively:
-
-* Enter a tweet via the web UI
-* Get a **predicted category** and its **confidence score**
-* Submit manual feedback (true label)
-* View recent predictions and filter by label
-
-### 🧠 What Gets Logged?
-
-Each prediction is logged to a PostgreSQL database with:
-
-* `input_text`
-* `predicted_label`
-* `confidence`
-* `user_label` (optional, via feedback UI)
-* `timestamp`
-
-A unique constraint ensures each (input\_text, predicted\_label) pair is logged only once.
+## ℹ️ Additional Information
+- For further details, checkout assets in the `assets/` directory for category distribution, confusion matrix, and more.
 
 ---
 
-## 🌐 Web UI with Feedback
+## 🧠 Author
 
-Visit the local app to interact:
-
-```bash
-make app
-# Or manually:
-uvicorn src.api:app --reload
-```
-
-Then open [http://localhost:8000](http://localhost:8000)
-
-### Features:
-
-* Live prediction interface
-* Admin-like table of predictions
-* Inline dropdown for **user feedback**
-* Disabled dropdown for already-labeled rows
-* Confidence scores shown as percentages
-
-### Example UI Screenshot:
-<p align="center">
-  <img src="assets/user_label_feedbacks.png" alt="Web UI Screenshot" width="600"/>
-</p>
-
+Built with love by [Serhat Kayıkçı](https://serhat.tech)
 ---
-
-## 💾 Database Setup
-
-PostgreSQL is used via Docker Compose.
-To start the DB:
-
-```bash
-docker-compose up -d
-```
-
-Your prediction logs table will be automatically created with:
-
-```sql
-CREATE TABLE prediction_logs (
-  id SERIAL PRIMARY KEY,
-  input_text TEXT NOT NULL,
-  predicted_label TEXT NOT NULL,
-  user_label TEXT,
-  confidence FLOAT,
-  timestamp TIMESTAMP DEFAULT NOW(),
-  CONSTRAINT unique_input_text_predicted_label UNIQUE (input_text, predicted_label)
-);
-```
-
----
-
-## 📡 Monitoring & Drift Detection (Extended)
-
-In addition to live prediction logging, **Evidently** is used to compare live predictions with training distribution.
-
-### 🔍 Run Monitoring:
-
-```bash
-# Manual run
-python monitoring/monitor.py
-
-# Or as a Prefect flow
-python monitoring/monitor_flow.py
-```
-
-Reports are saved to `monitoring/reports/`.
-
----
-## System Architecture
-```mermaid
-graph TD
-    A["Tweet Input (User)"] -->|"POST /predict"| B["FastAPI Backend"]
-    B --> C["TF-IDF Vectorizer + ML Model"]
-    C --> D["Prediction Output (label + confidence)"]
-    D -->|"Display"| E["Web UI (HTML/JS)"]
-    D -->|"Insert"| F["PostgreSQL DB"]
-
-    E -->|"GET /recent_predictions"| B
-    E -->|"POST /feedback"| B
-    B -->|"UPDATE"| F
-
-    subgraph MLflow
-        C --> G["Model Registry"]
-    end
-
-    subgraph Monitoring
-        F --> H["Evidently + Prefect"]
-    end
-
-```
----
-
-## 🧹 Cleanup: Retain Only Latest Model Artifacts
-
-To keep the directory clean and avoid clutter from outdated artifacts:
-
-```bash
-# Keep only the latest version of each artifact
-ls -t models/*_model.pkl | tail -n +2 | xargs rm -f
-ls -t models/*_vectorizer.pkl | tail -n +2 | xargs rm -f
-ls -t models/*_label_encoder.pkl | tail -n +2 | xargs rm -f
-```
-
----
-
-## 🛠️ Technologies Used
-
-* **Python** (scikit-learn, pandas, matplotlib)
-* **MLflow** for experiment tracking and model registry
-* **Prefect** for orchestration and scheduling
-* **Evidently** for monitoring and data drift detection
-
----
-
-
-
-## TODOS
-- Add evidently monitoring and reporting with sample data from the database.
-- Add monitoring with grafana or prometheus
-- Add terraform scripts for infrastructure setup
-- Fix local docker compose issues
-- Add github actions for CI/CD
