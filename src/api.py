@@ -21,7 +21,9 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5555")
 MODEL_NAME = os.getenv("MLFLOW_MODEL_NAME", "tweet_classifier_production")
-DB_URL = os.getenv("DATABASE_URL", "postgresql://tweets:tweets@localhost:5432/tweet_monitoring")
+DB_URL = os.getenv(
+    "DATABASE_URL", "postgresql://tweets:tweets@localhost:5432/tweet_monitoring"
+)
 
 # ---- Logging Setup ----
 logging.basicConfig(level=logging.INFO)
@@ -41,19 +43,21 @@ try:
     model = mlflow.pyfunc.load_model(model_uri)
     logger.info("✅ Model loaded from MLflow.")
 except Exception as e:
-    logger.exception("❌ Failed to load model from MLflow.")
+    logger.exception(f"❌ Failed to load model from MLflow. {e}")
     raise
 
 # ---- FastAPI App ----
 app = FastAPI(
     title="Tweet Category Classifier",
     description="Classify customer tweets into predefined categories.",
-    version="1.0.0"
+    version="1.0.0",
 )
+
 
 # ---- Pydantic Models ----
 class TweetInput(BaseModel):
     text: str
+
 
 class FeedbackItem(BaseModel):
     input_text: str
@@ -61,9 +65,11 @@ class FeedbackItem(BaseModel):
     user_label: str
     confidence: Optional[float] = None
 
+
 # ---- Helpers ----
 def connect_db():
     return psycopg2.connect(DB_URL)
+
 
 def safe_round(x):
     if isinstance(x, (float, int, np.float64)) and not math.isnan(x):
@@ -76,9 +82,11 @@ def safe_round(x):
 def health_check():
     return {"message": "📬 Tweet Classification API is live."}
 
+
 @app.get("/", response_class=HTMLResponse, tags=["Home"])
 def home(request: Request):
     return templates.TemplateResponse("feedback.html", {"request": request})
+
 
 @app.post("/predict", tags=["Prediction"])
 def predict(input: TweetInput):
@@ -88,16 +96,18 @@ def predict(input: TweetInput):
         prediction = predicted_row["label"]
         proba = predicted_row.get("confidence", None)
 
-
         # Log to DB
         try:
             conn = connect_db()
             with conn.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     INSERT INTO prediction_logs (input_text, predicted_label, confidence)
                     VALUES (%s, %s, %s)
                     ON CONFLICT (input_text, predicted_label) DO NOTHING;
-                """, (input.text, prediction, safe_round(proba)))
+                """,
+                    (input.text, prediction, safe_round(proba)),
+                )
             conn.commit()
             conn.close()
             logger.info("✅ Prediction logged to DB.")
@@ -107,18 +117,22 @@ def predict(input: TweetInput):
         return {
             "text": input.text,
             "predicted_category": str(prediction),
-            "confidence": safe_round(proba)
+            "confidence": safe_round(proba),
         }
 
     except Exception as e:
         logger.exception("❌ Prediction failed")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
+
 @app.get("/recent_predictions", tags=["Monitoring"])
 def recent_predictions():
     try:
         conn = psycopg2.connect(DB_URL)
-        df = pd.read_sql_query("SELECT * FROM prediction_logs ORDER BY prediction_logs.timestamp DESC LIMIT 100", conn)
+        df = pd.read_sql_query(
+            "SELECT * FROM prediction_logs ORDER BY prediction_logs.timestamp DESC LIMIT 100",
+            conn,
+        )
         conn.close()
 
         def safe_round(x):
@@ -142,16 +156,19 @@ def feedback(data: List[FeedbackItem]):
         conn = connect_db()
         with conn.cursor() as cur:
             for item in data:
-                cur.execute("""
+                cur.execute(
+                    """
                     UPDATE prediction_logs
                     SET user_label = %s
                     WHERE input_text = %s AND predicted_label = %s;
-                """, (item.user_label, item.input_text, item.predicted_label))
+                """,
+                    (item.user_label, item.input_text, item.predicted_label),
+                )
         conn.commit()
         conn.close()
         return {"status": "success"}
     except Exception as e:
-        logger.exception("❌ Feedback logging failed")
+        logger.exception(f"❌ Feedback logging failed. {e}")
         raise HTTPException(status_code=500, detail="Failed to log feedback")
 
 
@@ -159,11 +176,11 @@ def feedback(data: List[FeedbackItem]):
 def drift_report():
     report_files = sorted(
         [f for f in os.listdir("monitoring/reports") if f.endswith(".html")],
-        reverse=True
+        reverse=True,
     )
     if not report_files:
         raise HTTPException(status_code=404, detail="No drift reports found.")
-    
+
     latest = os.path.join("monitoring/reports", report_files[0])
     with open(latest, "r", encoding="utf-8") as f:
         html = f.read()

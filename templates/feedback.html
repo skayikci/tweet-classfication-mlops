@@ -139,7 +139,7 @@
         data: JSON.stringify({ text: tweet }),
         success: function (res) {
           $('#predictionResult').html(
-            `<strong>Prediction:</strong> ${res.predicted_category} &nbsp; 
+            `<strong>Prediction:</strong> ${res.predicted_category} &nbsp;
              <strong>Confidence:</strong> ${(res.confidence * 100).toFixed(1)}%`
           );
 

@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import os
 import sys
 import mlflow
@@ -66,7 +65,9 @@ df_test["timestamp"] = pd.date_range(end=now, periods=len(df_test))
 os.makedirs("data/monitoring", exist_ok=True)
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-cols = ["text", "prediction", "confidence", "timestamp"] + (["true_label"] if has_labels else [])
+cols = ["text", "prediction", "confidence", "timestamp"] + (
+    ["true_label"] if has_labels else []
+)
 df_train[cols].to_csv(f"data/monitoring/reference_{ts}.csv", index=False)
 df_test[cols].to_csv(f"data/monitoring/current_{ts}.csv", index=False)
 

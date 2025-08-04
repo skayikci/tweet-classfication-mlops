@@ -10,6 +10,7 @@ from sklearn.metrics import accuracy_score, classification_report
 import re
 import string
 
+
 # --- Utility functions ---
 def clean_text(text):
     text = text.lower()
@@ -19,30 +20,44 @@ def clean_text(text):
     text = " ".join(text.split())
     return text
 
+
 def create_labels(text):
     text_lower = text.lower()
-    if any(w in text_lower for w in ['billing', 'charge', 'payment', 'invoice', 'refund', 'money']):
-        return 'billing'
-    elif any(w in text_lower for w in ['technical', 'error', 'bug', 'not working', 'broken', 'issue']):
-        return 'technical'
-    elif any(w in text_lower for w in ['order', 'delivery', 'shipping', 'product', 'item']):
-        return 'orders'
-    elif any(w in text_lower for w in ['cancel', 'return', 'exchange', 'complaint']):
-        return 'complaints'
+    if any(
+        w in text_lower
+        for w in ["billing", "charge", "payment", "invoice", "refund", "money"]
+    ):
+        return "billing"
+    elif any(
+        w in text_lower
+        for w in ["technical", "error", "bug", "not working", "broken", "issue"]
+    ):
+        return "technical"
+    elif any(
+        w in text_lower for w in ["order", "delivery", "shipping", "product", "item"]
+    ):
+        return "orders"
+    elif any(w in text_lower for w in ["cancel", "return", "exchange", "complaint"]):
+        return "complaints"
     else:
-        return 'general'
+        return "general"
+
 
 # --- Load and preprocess data ---
-df = pd.read_csv("data/twcs.csv").dropna(subset=['text'])
+df = pd.read_csv("data/twcs.csv").dropna(subset=["text"])
 
-if 'category' not in df.columns:
-    df['category'] = df['text'].apply(create_labels)
+if "category" not in df.columns:
+    df["category"] = df["text"].apply(create_labels)
 
-df['cleaned_text'] = df['text'].apply(clean_text)
-df = df[df['cleaned_text'].str.len() > 10]
+df["cleaned_text"] = df["text"].apply(clean_text)
+df = df[df["cleaned_text"].str.len() > 10]
 
 # Balance dataset: max 5000 samples per class
-df = df.groupby("category").apply(lambda x: x.sample(min(5000, len(x)), random_state=42)).reset_index(drop=True)
+df = (
+    df.groupby("category")
+    .apply(lambda x: x.sample(min(5000, len(x)), random_state=42))
+    .reset_index(drop=True)
+)
 
 # Encode labels
 le = LabelEncoder()
@@ -55,7 +70,9 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # Vectorization with min_df
-vectorizer = TfidfVectorizer(max_features=10000, ngram_range=(1, 2), stop_words="english", min_df=2)
+vectorizer = TfidfVectorizer(
+    max_features=10000, ngram_range=(1, 2), stop_words="english", min_df=2
+)
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
 

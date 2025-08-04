@@ -62,7 +62,7 @@ All experiments were tracked and compared using **MLflow**.
 
 <p align="center">
   <img src="assets/confusion_matrix.png" alt="Confusion Matrix" width="600"/>
-</p>    
+</p>
 
 ---
 

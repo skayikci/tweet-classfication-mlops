@@ -5,7 +5,10 @@ from evidently.report import Report
 from evidently.metric_preset import DataDriftPreset
 import logging
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
 
 def run_drift_report():
     logging.info("📊 Starting Evidently drift report generation...")
@@ -15,8 +18,12 @@ def run_drift_report():
     os.makedirs(REPORT_DIR, exist_ok=True)
 
     # Find latest reference and current CSVs
-    ref_file = sorted([f for f in os.listdir(MONITORING_DIR) if f.startswith("reference_")])[-1]
-    cur_file = sorted([f for f in os.listdir(MONITORING_DIR) if f.startswith("current_")])[-1]
+    ref_file = sorted(
+        [f for f in os.listdir(MONITORING_DIR) if f.startswith("reference_")]
+    )[-1]
+    cur_file = sorted(
+        [f for f in os.listdir(MONITORING_DIR) if f.startswith("current_")]
+    )[-1]
 
     reference_df = pd.read_csv(os.path.join(MONITORING_DIR, ref_file))
     current_df = pd.read_csv(os.path.join(MONITORING_DIR, cur_file))
@@ -28,11 +35,18 @@ def run_drift_report():
             raise ValueError(f"❌ Missing required column: {col}")
 
     # Check for empty prediction column
-    if reference_df["prediction"].isna().all() or reference_df["prediction"].eq("").all():
-        raise ValueError("❌ 'prediction' column in reference dataset is completely empty.")
+    if (
+        reference_df["prediction"].isna().all()
+        or reference_df["prediction"].eq("").all()
+    ):
+        raise ValueError(
+            "❌ 'prediction' column in reference dataset is completely empty."
+        )
 
     if current_df["prediction"].isna().all() or current_df["prediction"].eq("").all():
-        raise ValueError("❌ 'prediction' column in current dataset is completely empty.")
+        raise ValueError(
+            "❌ 'prediction' column in current dataset is completely empty."
+        )
 
     # Ensure string types for categorical values
     reference_df["prediction"] = reference_df["prediction"].astype(str)
@@ -47,6 +61,7 @@ def run_drift_report():
     report.save_html(report_path)
 
     logging.info(f"✅ Drift report saved to: {report_path}")
+
 
 if __name__ == "__main__":
     run_drift_report()

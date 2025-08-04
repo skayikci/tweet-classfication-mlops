@@ -30,13 +30,13 @@ lint:
 	flake8 src/ *.py
 
 test:
-	pytest tests/ || python3 -m unittest discover -s tests
+	PYTHONPATH=. pytest tests
 
 retrain:
 	python src/train_svm.py
 
 clean:
-	rm -rf __pycache__ .pytest_cache .mypy_cache
+	rm -rf __pycache__ .pytest_cache .mypy_cache\
 	docker rmi tweet-classification-api || true
 
 monitoring:

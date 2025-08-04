@@ -2,6 +2,7 @@ import mlflow.pyfunc
 import pandas as pd
 import joblib
 
+
 class TweetClassifierModel(mlflow.pyfunc.PythonModel):
     def load_context(self, context):
         self.model = joblib.load(context.artifacts["model"])
@@ -18,7 +19,4 @@ class TweetClassifierModel(mlflow.pyfunc.PythonModel):
         except Exception:
             confidences = [None] * len(labels)
 
-        return pd.DataFrame({
-            "label": labels,
-            "confidence": confidences
-        })
+        return pd.DataFrame({"label": labels, "confidence": confidences})
