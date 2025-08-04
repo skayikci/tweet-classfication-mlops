@@ -23,7 +23,10 @@ services:
       dockerfile: Dockerfile
     environment:
       DATABASE_URL: postgresql://tweets:tweets@db:5432/tweet_monitoring
-      MLFLOW_TRACKING_URI: http://mlflow:5555
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
     ports:
       - "8000:8000"
     depends_on:

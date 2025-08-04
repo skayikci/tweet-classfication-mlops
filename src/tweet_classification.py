@@ -27,6 +27,8 @@ from sklearn.preprocessing import LabelEncoder
 import joblib
 import mlflow
 import mlflow.sklearn
+from mlflow import MlflowClient
+from tweet_pyfunc_model import TweetClassifierModel
 from dotenv import load_dotenv
 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -502,6 +504,61 @@ def run_model_comparison():
     
     return results, tuned_model, tuned_vectorizer, le
 
+def register_api_ready_pyfunc_model(final_model, final_vectorizer, le, model_name="tweet_classifier_production"):
+    """
+    Register a final trained model + vectorizer + label encoder as a PyFunc model,
+    and promote it to the 'Production' alias in the MLflow model registry.
+    """
+    # Set up artifact storage directory
+    artifact_dir = f"pyfunc_model_{datetime.now().strftime('%Y%m%d_%H%M')}"
+    os.makedirs(artifact_dir, exist_ok=True)
+
+    model_path = os.path.join(artifact_dir, "model.pkl")
+    vectorizer_path = os.path.join(artifact_dir, "vectorizer.pkl")
+    encoder_path = os.path.join(artifact_dir, "label_encoder.pkl")
+
+    joblib.dump(final_model, model_path)
+    joblib.dump(final_vectorizer, vectorizer_path)
+    joblib.dump(le, encoder_path)
+
+    # MLflow setup
+    mlflow.set_tracking_uri("http://localhost:5555")
+    mlflow.set_experiment("tweet_api_ready_model")
+
+    artifacts = {
+        "model": model_path,
+        "vectorizer": vectorizer_path,
+        "label_encoder": encoder_path
+    }
+
+    with mlflow.start_run(run_name=f"{model_name}_{datetime.now().strftime('%H%M')}") as run:
+        mlflow.pyfunc.log_model(
+            artifact_path="model",
+            python_model=TweetClassifierModel(),
+            artifacts=artifacts,
+            registered_model_name=model_name
+        )
+
+        run_id = run.info.run_id
+        print(f"✅ Model logged with run_id: {run_id}")
+
+    # Promote to Production
+    client = MlflowClient()
+    versions = client.search_model_versions(f"name='{model_name}'")
+
+    if not versions:
+        raise RuntimeError(f"No model versions found for '{model_name}'")
+
+    latest_version = sorted(versions, key=lambda v: int(v.version))[-1].version
+
+    client.transition_model_version_stage(
+        name=model_name,
+        version=latest_version,
+        alias="production"
+    )
+
+    print(f"🚀 Model version {latest_version} of '{model_name}' promoted to Production.")
+
 def register_best_model():
     """
     Register the best tweet model in MLflow Model Registry.
@@ -555,6 +612,7 @@ def pipeline_baseline(df):
 
 def pipeline_model_comparison():
     results, final_model, final_vectorizer, le = run_model_comparison()
+    register_api_ready_pyfunc_model(final_model, final_vectorizer, le)
     return results, final_model, final_vectorizer, le
 
 def pipeline_register_best():
