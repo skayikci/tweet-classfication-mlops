@@ -10,6 +10,8 @@ from collections import Counter
 import warnings
 warnings.filterwarnings('ignore')
 
+import matplotlib
+matplotlib.use("Agg")
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,7 +27,10 @@ from sklearn.preprocessing import LabelEncoder
 import joblib
 import mlflow
 import mlflow.sklearn
-import mlflow.pyfunc
+from dotenv import load_dotenv
+
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+load_dotenv()
 
 # Data loading and preprocessing functions (merged from Day 1)
 def load_data():
@@ -162,6 +167,8 @@ def run_baseline_model(df):
     from sklearn.metrics import confusion_matrix
     import seaborn as sns
     cm = confusion_matrix(y_test, y_pred)
+    import matplotlib
+    matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
@@ -176,8 +183,7 @@ def setup_mlflow():
     """
     Initialize MLflow for experiment tracking
     """
-    # Set tracking URI (local for now)
-    mlflow.set_tracking_uri("file:./mlruns")
+    mlflow.set_tracking_uri("http://localhost:5555")
     
     # Create or set experiment
     experiment_name = "tweet_classification_experiments"
