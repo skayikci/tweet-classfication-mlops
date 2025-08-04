@@ -23,6 +23,7 @@ evidently==0.4.17
 
 # Configuration handling
 python-dotenv==1.0.1
+griffe==1.9.0
 
 # Testing
 pytest==8.2.1
@@ -33,3 +34,4 @@ flake8==7.0.0
 
 # Database interaction
 psycopg2-binary==2.9.9
+boto3==1.32.0
