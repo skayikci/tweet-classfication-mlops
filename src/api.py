@@ -153,3 +153,18 @@ def feedback(data: List[FeedbackItem]):
     except Exception as e:
         logger.exception("❌ Feedback logging failed")
         raise HTTPException(status_code=500, detail="Failed to log feedback")
+
+
+@app.get("/drift-report", response_class=HTMLResponse)
+def drift_report():
+    report_files = sorted(
+        [f for f in os.listdir("monitoring/reports") if f.endswith(".html")],
+        reverse=True
+    )
+    if not report_files:
+        raise HTTPException(status_code=404, detail="No drift reports found.")
+    
+    latest = os.path.join("monitoring/reports", report_files[0])
+    with open(latest, "r", encoding="utf-8") as f:
+        html = f.read()
+    return HTMLResponse(content=html)

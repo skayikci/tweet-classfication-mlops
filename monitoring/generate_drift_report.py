@@ -21,10 +21,22 @@ def run_drift_report():
     reference_df = pd.read_csv(os.path.join(MONITORING_DIR, ref_file))
     current_df = pd.read_csv(os.path.join(MONITORING_DIR, cur_file))
 
-    # Sanity check
-    for col in ["text", "prediction", "confidence"]:
+    # Sanity check: required columns
+    required_cols = ["text", "prediction", "confidence"]
+    for col in required_cols:
         if col not in reference_df.columns or col not in current_df.columns:
-            raise ValueError(f"Missing required column: {col}")
+            raise ValueError(f"❌ Missing required column: {col}")
+
+    # Check for empty prediction column
+    if reference_df["prediction"].isna().all() or reference_df["prediction"].eq("").all():
+        raise ValueError("❌ 'prediction' column in reference dataset is completely empty.")
+
+    if current_df["prediction"].isna().all() or current_df["prediction"].eq("").all():
+        raise ValueError("❌ 'prediction' column in current dataset is completely empty.")
+
+    # Ensure string types for categorical values
+    reference_df["prediction"] = reference_df["prediction"].astype(str)
+    current_df["prediction"] = current_df["prediction"].astype(str)
 
     # Generate report
     report = Report(metrics=[DataDriftPreset()])

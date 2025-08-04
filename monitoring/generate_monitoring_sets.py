@@ -1,77 +1,76 @@
 import pandas as pd
-import joblib
-from sklearn.model_selection import train_test_split
+import numpy as np
 import os
+import sys
+import mlflow
 from datetime import datetime
 
-# Load model, vectorizer, label encoder
-model = joblib.load("models/svm_tfidf_model_20250802_2048.pkl")
-vectorizer = joblib.load("models/svm_tfidf_vectorizer_20250802_2048.pkl")
-label_encoder = joblib.load("models/svm_tfidf_label_encoder_20250802_2048.pkl")
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-# Load dataset
+
+# ---- Config ----
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5555")
+MODEL_NAME = os.getenv("MLFLOW_MODEL_NAME", "tweet_classifier_production")
+MODEL_STAGE = os.getenv("MLFLOW_MODEL_STAGE", "production")
+
+# ---- Set MLflow Tracking URI ----
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+
+# ---- Load Model from MLflow ----
+model_uri = f"models:/{MODEL_NAME}@{MODEL_STAGE}"
+model = mlflow.pyfunc.load_model(model_uri)
+
+# ---- Load Dataset ----
 df = pd.read_csv("data/twcs.csv")
 df = df.dropna(subset=["text"])
 df = df[df["text"].str.len() > 10].reset_index(drop=True)
 
-# If true label exists (e.g., 'category'), keep it
 has_labels = "category" in df.columns
 
-# Split
-df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
+# ---- Sample ----
+df_train = df.sample(n=1000, random_state=42).copy()
+df_test = df.sample(n=200, random_state=24).copy()
 
-# Sample dynamically
-df_train_monitor = df_train.sample(n=1000, random_state=42).copy()
-df_test_monitor = df_test.sample(n=200, random_state=42).copy()
+# ---- Predict using MLflow pyfunc ----
+train_preds = model.predict(df_train).reset_index(drop=True)
+test_preds = model.predict(df_test).reset_index(drop=True)
 
-# Vectorize
-X_train_vec = vectorizer.transform(df_train_monitor["text"])
-X_test_vec = vectorizer.transform(df_test_monitor["text"])
+print("🔍 Train prediction output:")
+print(train_preds.head())
+print(train_preds.columns)
+print(type(train_preds))
 
-# Predict
-train_preds = model.predict(X_train_vec)
-test_preds = model.predict(X_test_vec)
+print(f"df_train shape: {df_train.shape}")
+print(f"train_preds shape: {train_preds.shape}")
+print(f"indices match: {df_train.index.equals(train_preds.index)}")
 
-# Decode
-df_train_monitor["prediction"] = label_encoder.inverse_transform(train_preds)
-df_test_monitor["prediction"] = label_encoder.inverse_transform(test_preds)
 
-# Confidence (if supported)
-if hasattr(model, "decision_function"):
-    conf_train = model.decision_function(X_train_vec)
-    conf_test = model.decision_function(X_test_vec)
+# ---- Extract predictions & confidence ----
+df_train.loc[:, "prediction"] = train_preds["label"].values
+df_test.loc[:, "prediction"] = test_preds["label"].values
 
-    # Binary or multiclass
-    if len(conf_train.shape) == 1:
-        df_train_monitor["confidence"] = conf_train
-        df_test_monitor["confidence"] = conf_test
-    else:
-        df_train_monitor["confidence"] = conf_train.max(axis=1)
-        df_test_monitor["confidence"] = conf_test.max(axis=1)
-else:
-    df_train_monitor["confidence"] = None
-    df_test_monitor["confidence"] = None
+df_train.loc[:, "confidence"] = train_preds["confidence"].values
+df_test.loc[:, "confidence"] = test_preds["confidence"].values
 
-# Add true label if available
+# ---- Add true label if available ----
 if has_labels:
-    df_train_monitor["true_label"] = df_train_monitor["category"]
-    df_test_monitor["true_label"] = df_test_monitor["category"]
+    df_train["true_label"] = df_train["category"]
+    df_test["true_label"] = df_test["category"]
 
-# Add timestamp
+# ---- Add timestamps ----
 now = pd.Timestamp.now()
-df_train_monitor["timestamp"] = pd.date_range(end=now, periods=len(df_train_monitor))
-df_test_monitor["timestamp"] = pd.date_range(end=now, periods=len(df_test_monitor))
+df_train["timestamp"] = pd.date_range(end=now, periods=len(df_train))
+df_test["timestamp"] = pd.date_range(end=now, periods=len(df_test))
 
-# Save
+# ---- Save CSVs ----
 os.makedirs("data/monitoring", exist_ok=True)
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-df_train_monitor[["text", "prediction", "confidence", "timestamp"] + (["true_label"] if has_labels else [])] \
-    .to_csv(f"data/monitoring/reference_{ts}.csv", index=False)
-df_test_monitor[["text", "prediction", "confidence", "timestamp"] + (["true_label"] if has_labels else [])] \
-    .to_csv(f"data/monitoring/current_{ts}.csv", index=False)
+cols = ["text", "prediction", "confidence", "timestamp"] + (["true_label"] if has_labels else [])
+df_train[cols].to_csv(f"data/monitoring/reference_{ts}.csv", index=False)
+df_test[cols].to_csv(f"data/monitoring/current_{ts}.csv", index=False)
 
-# Print stats
-print("✅ Saved monitoring datasets")
+# ---- Done ----
+print("✅ Monitoring datasets saved.")
 print("\n📊 Test prediction distribution:")
-print(df_test_monitor["prediction"].value_counts(normalize=True).round(3))
+print(df_test["prediction"].value_counts(normalize=True).round(3))
